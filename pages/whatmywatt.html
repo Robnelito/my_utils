@@ -8,17 +8,17 @@
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
     :root {
-      --bg: #0f1117;
-      --surface: #181c27;
-      --card: #1e2335;
-      --border: #2a3050;
-      --accent: #4f9cf9;
-      --accent-glow: rgba(79, 156, 249, 0.18);
-      --accent2: #f9c74f;
-      --text: #e8eaf0;
-      --muted: #7a84a3;
-      --danger: #f87171;
-      --success: #34d399;
+      --bg: #f4f6fa;
+      --surface: #eef1f7;
+      --card: #ffffff;
+      --border: #dde2ec;
+      --accent: #2f80ed;
+      --accent-glow: rgba(47, 128, 237, 0.12);
+      --accent2: #e0a72b;
+      --text: #1a1f2e;
+      --muted: #6b7488;
+      --danger: #e5484d;
+      --success: #2b8a5b;
       --font-display: 'Space Grotesk', sans-serif;
       --font-body: 'Inter', sans-serif;
     }
@@ -53,6 +53,11 @@
       font-size: 0.9rem;
       margin-top: 0.3rem;
     }
+    .back-link {
+      display: inline-block; margin-top: 0.6rem; font-size: 0.8rem;
+      color: var(--accent); text-decoration: none;
+    }
+    .back-link:hover { text-decoration: underline; }
 
     /* ── Layout ── */
     .container { max-width: 1000px; margin: 0 auto; }
@@ -66,6 +71,7 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 1.4rem 1.5rem;
+      box-shadow: 0 1px 3px rgba(26, 31, 46, 0.05);
     }
     .card-title {
       font-family: var(--font-display);
@@ -98,7 +104,6 @@
       box-shadow: 0 0 0 3px var(--accent-glow);
     }
     input[type="date"]::-webkit-calendar-picker-indicator {
-      filter: invert(0.6);
       cursor: pointer;
     }
 
@@ -106,7 +111,9 @@
     .field:last-child { margin-bottom: 0; }
 
     .row-inputs { display: grid; grid-template-columns: 1fr 80px; gap: 0.6rem; align-items: end; }
-    .row-three { display: grid; grid-template-columns: 1fr 90px 90px; gap: 0.6rem; align-items: end; }
+    .row-three { display: grid; grid-template-columns: 1fr 80px 130px 140px; gap: 0.6rem; align-items: end; margin-bottom: 0.9rem; }
+    @media (max-width: 600px) { .row-three { grid-template-columns: 1fr 1fr; } }
+    .row-inputs .field, .row-three .field { margin-bottom: 0; }
 
     /* ── Buttons ── */
     .btn {
@@ -116,14 +123,14 @@
       transition: background 0.18s, transform 0.1s;
     }
     .btn:active { transform: scale(0.97); }
-    .btn-primary { background: var(--accent); color: #0a0f1e; }
-    .btn-primary:hover { background: #74b3ff; }
+    .btn-primary { background: var(--accent); color: #ffffff; }
+    .btn-primary:hover { background: #1c6fdc; }
     .btn-ghost {
       background: var(--border); color: var(--muted);
     }
-    .btn-ghost:hover { background: #3a4068; color: var(--text); }
+    .btn-ghost:hover { background: #cfd6e3; color: var(--text); }
     .btn-danger { background: transparent; border: 1px solid var(--border); color: var(--danger); }
-    .btn-danger:hover { background: rgba(248,113,113,0.1); }
+    .btn-danger:hover { background: rgba(229,72,77,0.08); }
     .btn-full { width: 100%; }
     .btn-sm { font-size: 0.78rem; padding: 0.35rem 0.7rem; }
 
@@ -172,7 +179,7 @@
     .breakdown { margin-top: 1rem; }
     .breakdown-header, .breakdown-row {
       display: grid;
-      grid-template-columns: 1fr 70px 70px 80px;
+      grid-template-columns: 1fr 45px 60px 55px 75px;
       gap: 0.5rem;
       padding: 0.45rem 0.6rem;
       font-size: 0.8rem;
@@ -198,8 +205,8 @@
 
     /* ── Tip ── */
     .tip {
-      background: rgba(249,199,79,0.07); border: 1px solid rgba(249,199,79,0.2);
-      border-radius: 8px; padding: 0.7rem 1rem; font-size: 0.8rem; color: #f9c74f;
+      background: rgba(224,167,43,0.1); border: 1px solid rgba(224,167,43,0.35);
+      border-radius: 8px; padding: 0.7rem 1rem; font-size: 0.8rem; color: #8a6410;
       display: none; margin-top: 1rem;
     }
     .tip strong { font-weight: 600; }
@@ -223,6 +230,7 @@
   <header>
     <div class="logo">What my <span>Watt</span></div>
     <p>Calculateur de consommation électrique domestique</p>
+    <a class="back-link" href="../index.html">← Retour aux outils</a>
   </header>
 
   <!-- ── Ajout d'appareil ── -->
@@ -239,12 +247,17 @@
       <span class="preset-tag" onclick="fillPreset('Chauffe-eau',2000,2)">🚿 Chauffe-eau</span>
       <span class="preset-tag" onclick="fillPreset('Aspirateur',900,0.5)">🌀 Aspirateur</span>
       <span class="preset-tag" onclick="fillPreset('Rice cooker',700,1)">🍚 Rice cooker</span>
+      <span class="preset-tag" onclick="fillPreset('Résistance',1500,1)">🔥 Résistance</span>
     </div>
 
     <div class="row-three">
       <div class="field">
         <label>Nom de l'appareil</label>
         <input type="text" id="inp-name" placeholder="ex. Climatiseur salon" />
+      </div>
+      <div class="field">
+        <label>Quantité</label>
+        <input type="number" id="inp-qty" value="1" min="1" step="1" placeholder="1" />
       </div>
       <div class="field">
         <label>Puissance (W)</label>
@@ -308,6 +321,7 @@
       <div class="breakdown">
         <div class="breakdown-header">
           <span>Appareil</span>
+          <span>Qté</span>
           <span>W</span>
           <span>h/j</span>
           <span>kWh</span>
@@ -329,6 +343,7 @@
   // ── Presets ──
   function fillPreset(name, watt, hours) {
     document.getElementById('inp-name').value = name;
+    document.getElementById('inp-qty').value = 1;
     document.getElementById('inp-watt').value = watt;
     document.getElementById('inp-hours').value = hours;
     document.getElementById('inp-name').focus();
@@ -346,19 +361,22 @@
   // ── Ajouter un appareil ──
   function addAppliance() {
     const name  = document.getElementById('inp-name').value.trim();
+    const qty   = parseInt(document.getElementById('inp-qty').value, 10);
     const watt  = parseFloat(document.getElementById('inp-watt').value);
     const hours = parseFloat(document.getElementById('inp-hours').value);
 
     if (!name)          return alert('Veuillez saisir un nom pour l\'appareil.');
+    if (isNaN(qty) || qty < 1)      return alert('Quantité invalide (doit être ≥ 1).');
     if (isNaN(watt) || watt <= 0)   return alert('Puissance invalide (doit être > 0 W).');
     if (isNaN(hours) || hours <= 0 || hours > 24) return alert('Durée invalide (entre 0 et 24 h/jour).');
 
     const id = Date.now();
-    const kwhPerDay = (watt * hours) / 1000;
-    appliances.push({ id, name, watt, hours, kwhPerDay });
+    const kwhPerDay = (qty * watt * hours) / 1000;
+    appliances.push({ id, name, qty, watt, hours, kwhPerDay });
 
     // reset
     document.getElementById('inp-name').value = '';
+    document.getElementById('inp-qty').value = 1;
     document.getElementById('inp-watt').value = '';
     document.getElementById('inp-hours').value = '';
 
@@ -391,8 +409,8 @@
       row.className = 'appliance-row';
       row.innerHTML = `
         <div class="appliance-info">
-          <div class="appliance-name">${a.name}</div>
-          <div class="appliance-meta">${a.watt} W · ${a.hours} h/jour</div>
+          <div class="appliance-name">${a.name}${a.qty > 1 ? ` <span style="color:var(--muted);font-weight:400;">× ${a.qty}</span>` : ''}</div>
+          <div class="appliance-meta">${a.qty > 1 ? `${a.qty} × ` : ''}${a.watt} W · ${a.hours} h/jour</div>
         </div>
         <div class="appliance-kwh">${a.kwhPerDay.toFixed(3)} kWh/j</div>
         <button class="btn btn-danger btn-sm" onclick="removeAppliance(${a.id})">✕</button>
@@ -432,6 +450,7 @@
           ${a.name}
           <div class="pct-bar-wrap"><div class="pct-bar" style="width:${pct.toFixed(1)}%"></div></div>
         </span>
+        <span>${a.qty}</span>
         <span>${a.watt}</span>
         <span>${a.hours}</span>
         <span>${appKwh.toFixed(2)}</span>
@@ -445,7 +464,7 @@
     const tipBox  = document.getElementById('tip-box');
     const tipText = document.getElementById('tip-text');
     if (topPct > 40) {
-      tipText.textContent = `"${topAppliance.name}" représente ${topPct.toFixed(0)} % de votre consommation totale. Réduire son usage de 30 min/jour économiserait ~${((topAppliance.watt * 0.5 / 1000) * days).toFixed(2)} kWh sur la période.`;
+      tipText.textContent = `"${topAppliance.name}" représente ${topPct.toFixed(0)} % de votre consommation totale. Réduire son usage de 30 min/jour économiserait ~${((topAppliance.qty * topAppliance.watt * 0.5 / 1000) * days).toFixed(2)} kWh sur la période.`;
       tipBox.style.display = 'block';
     } else {
       tipBox.style.display = 'none';

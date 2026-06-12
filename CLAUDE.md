@@ -28,4 +28,4 @@ New tool pages should match the existing `whatmywatt.html` look so the collectio
 
 ## Language note
 
-Tool UI copy is in **French** (`<html lang="fr">`); the index hub is English. Keep user-facing strings in a page consistent with that page's existing language.
+The apps are **French only**. Every page — the index hub and all tools — uses `<html lang="fr">`, and all user-facing copy must be written in French. Do not add English (or any other language) strings to the UI; when creating a new page or editing an existing one, write everything in French.

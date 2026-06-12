@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wattwise — Planning Journalier</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+    :root {
+      --bg: #f4f6fa;
+      --surface: #eef1f7;
+      --card: #ffffff;
+      --border: #dde2ec;
+      --accent: #2f80ed;
+      --accent-glow: rgba(47, 128, 237, 0.12);
+      --accent2: #e0a72b;
+      --text: #1a1f2e;
+      --muted: #6b7488;
+      --danger: #e5484d;
+      --success: #2b8a5b;
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+    }
+
+    /* ── Header ── */
+    header { text-align: center; margin-bottom: 2.5rem; }
+    .logo {
+      font-family: var(--font-display);
+      font-size: 2rem; font-weight: 700;
+      letter-spacing: -0.02em; color: var(--text);
+    }
+    .logo span { color: var(--accent); }
+    header p { color: var(--muted); font-size: 0.9rem; margin-top: 0.3rem; }
+    .back-link {
+      display: inline-block; margin-top: 0.6rem; font-size: 0.8rem;
+      color: var(--accent); text-decoration: none;
+    }
+    .back-link:hover { text-decoration: underline; }
+
+    /* ── Layout ── */
+    .container { max-width: 1000px; margin: 0 auto; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.4rem 1.5rem;
+      box-shadow: 0 1px 3px rgba(26, 31, 46, 0.05);
+    }
+    .card-title {
+      font-family: var(--font-display); font-size: 0.8rem;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--muted); margin-bottom: 1.1rem;
+    }
+
+    /* ── Form elements ── */
+    label { font-size: 0.83rem; color: var(--muted); display: block; margin-bottom: 0.3rem; }
+
+    input[type="text"], input[type="number"], input[type="time"] {
+      width: 100%; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); font-family: var(--font-body); font-size: 0.93rem;
+      padding: 0.55rem 0.8rem; outline: none;
+      transition: border-color 0.18s; appearance: none; -webkit-appearance: none;
+    }
+    input:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    input[type="time"]::-webkit-calendar-picker-indicator { cursor: pointer; }
+
+    .field { margin-bottom: 0.9rem; }
+    .field:last-child { margin-bottom: 0; }
+
+    .row-form {
+      display: grid; grid-template-columns: 1fr 110px 120px 120px;
+      gap: 0.6rem; align-items: end; margin-bottom: 0.9rem;
+    }
+    @media (max-width: 640px) { .row-form { grid-template-columns: 1fr 1fr; } }
+    .row-form .field { margin-bottom: 0; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+      font-family: var(--font-display); font-size: 0.87rem; font-weight: 600;
+      border: none; border-radius: 8px; cursor: pointer; padding: 0.58rem 1rem;
+      transition: background 0.18s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--accent); color: #ffffff; }
+    .btn-primary:hover { background: #1c6fdc; }
+    .btn-danger { background: transparent; border: 1px solid var(--border); color: var(--danger); }
+    .btn-danger:hover { background: rgba(229,72,77,0.08); }
+    .btn-full { width: 100%; }
+    .btn-sm { font-size: 0.78rem; padding: 0.35rem 0.7rem; }
+
+    /* ── Presets ── */
+    .presets { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.9rem; }
+    .preset-tag {
+      font-size: 0.73rem; padding: 0.25rem 0.65rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; cursor: pointer; color: var(--muted);
+      transition: all 0.15s;
+    }
+    .preset-tag:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Appareils list ── */
+    #appliance-list { margin-top: 1rem; display: flex; flex-direction: column; gap: 0.7rem; }
+
+    .appliance-row {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.7rem 0.9rem;
+      animation: fadeIn 0.22s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; } }
+
+    .appliance-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+    .appliance-name { font-size: 0.9rem; font-weight: 500; }
+    .appliance-meta { font-size: 0.75rem; color: var(--muted); margin-top: 0.1rem; }
+    .appliance-kwh {
+      font-family: var(--font-display); font-size: 0.95rem; font-weight: 600;
+      color: var(--accent); margin-right: 0.6rem; white-space: nowrap;
+    }
+
+    /* ── Mini-frise par appareil ── */
+    .track {
+      position: relative; height: 12px; margin-top: 0.6rem;
+      background: var(--border); border-radius: 4px; overflow: hidden;
+    }
+    .track-fill {
+      position: absolute; top: 0; bottom: 0;
+      background: var(--accent); border-radius: 4px;
+    }
+
+    /* ── Période / résultats ── */
+    #results-section { display: none; margin-top: 1.5rem; }
+
+    .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; }
+    @media (max-width: 560px) { .result-grid { grid-template-columns: 1fr 1fr; } }
+    .result-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      padding: 1rem 1rem 0.9rem; text-align: center;
+    }
+    .result-box.highlight { border-color: var(--accent); background: var(--accent-glow); }
+    .result-value {
+      font-family: var(--font-display); font-size: 1.6rem; font-weight: 700;
+      line-height: 1; color: var(--text);
+    }
+    .result-box.highlight .result-value { color: var(--accent); }
+    .result-label { font-size: 0.73rem; color: var(--muted); margin-top: 0.35rem; text-transform: uppercase; letter-spacing: 0.07em; }
+
+    /* ── Frise 24h (profil de puissance) ── */
+    .profile-wrap { margin-top: 0.4rem; }
+    .profile {
+      display: flex; align-items: flex-end; gap: 2px;
+      height: 150px; padding-top: 0.5rem;
+    }
+    .profile-bar {
+      flex: 1; background: var(--accent); border-radius: 3px 3px 0 0;
+      min-height: 2px; position: relative;
+      transition: height 0.4s ease, background 0.2s;
+    }
+    .profile-bar.peak { background: var(--danger); }
+    .profile-bar:hover { background: var(--accent2); }
+    .profile-axis {
+      display: flex; justify-content: space-between;
+      font-size: 0.7rem; color: var(--muted); margin-top: 0.35rem;
+    }
+
+    .empty {
+      text-align: center; color: var(--muted); font-size: 0.85rem;
+      padding: 1.5rem; border: 1px dashed var(--border); border-radius: 10px;
+    }
+
+    .tip {
+      background: rgba(224,167,43,0.1); border: 1px solid rgba(224,167,43,0.35);
+      border-radius: 8px; padding: 0.7rem 1rem; font-size: 0.8rem; color: #8a6410;
+      display: none; margin-top: 1rem;
+    }
+    .tip strong { font-weight: 600; }
+
+    hr.sep { border: none; border-top: 1px solid var(--border); margin: 1.2rem 0; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">Watt <span>Planning</span></div>
+    <p>Consommation journalière par plage horaire</p>
+    <a class="back-link" href="../index.html">← Retour aux outils</a>
+  </header>
+
+  <!-- ── Ajout d'appareil ── -->
+  <div class="card" style="margin-bottom:1rem;">
+    <div class="card-title">Ajouter un appareil sur la journée</div>
+
+    <div class="presets">
+      <span class="preset-tag" onclick="fillPreset('Réfrigérateur',150,'00:00','00:00')">🧊 Réfrigérateur 24h</span>
+      <span class="preset-tag" onclick="fillPreset('Lave-linge',2000,'14:00','15:30')">🫧 Lave-linge</span>
+      <span class="preset-tag" onclick="fillPreset('Four électrique',2200,'19:00','20:00')">🍳 Four</span>
+      <span class="preset-tag" onclick="fillPreset('Télévision',120,'20:00','23:00')">📺 Télévision</span>
+      <span class="preset-tag" onclick="fillPreset('Chauffe-eau',2000,'05:00','07:00')">🚿 Chauffe-eau</span>
+      <span class="preset-tag" onclick="fillPreset('Climatiseur',1800,'13:00','17:00')">❄️ Climatiseur</span>
+      <span class="preset-tag" onclick="fillPreset('Éclairage',60,'18:00','23:00')">💡 Éclairage</span>
+    </div>
+
+    <div class="row-form">
+      <div class="field">
+        <label>Nom de l'appareil</label>
+        <input type="text" id="inp-name" placeholder="ex. Climatiseur salon" />
+      </div>
+      <div class="field">
+        <label>Puissance (W)</label>
+        <input type="number" id="inp-watt" placeholder="1800" min="0" step="1" />
+      </div>
+      <div class="field">
+        <label>Début</label>
+        <input type="time" id="inp-start" value="08:00" />
+      </div>
+      <div class="field">
+        <label>Fin</label>
+        <input type="time" id="inp-end" value="09:00" />
+      </div>
+    </div>
+    <p style="font-size:0.75rem;color:var(--muted);margin-bottom:0.8rem;">
+      Astuce : une plage qui finit avant son début est considérée comme passant minuit
+      (ex. 22:00 → 06:00). Pour 24 h, mettez la même heure en début et en fin.
+    </p>
+    <button class="btn btn-primary btn-full" onclick="addAppliance()">＋ Ajouter au planning</button>
+  </div>
+
+  <!-- ── Liste appareils ── -->
+  <div class="card" style="margin-bottom:1rem;">
+    <div class="card-title">Planning de la journée</div>
+    <div id="appliance-list">
+      <div class="empty" id="empty-msg">Aucune plage ajoutée pour l'instant.</div>
+    </div>
+  </div>
+
+  <!-- ── Bouton calculer ── -->
+  <button class="btn btn-primary btn-full" style="margin-bottom:1.5rem;font-size:1rem;padding:0.85rem;" onclick="calculate()">
+    ⚡ Calculer la journée
+  </button>
+
+  <!-- ── Résultats ── -->
+  <div id="results-section">
+    <div class="card">
+      <div class="card-title">Résultats — sur 24 h</div>
+      <div class="result-grid">
+        <div class="result-box highlight">
+          <div class="result-value" id="res-kwh">—</div>
+          <div class="result-label">kWh / jour</div>
+        </div>
+        <div class="result-box">
+          <div class="result-value" id="res-peak">—</div>
+          <div class="result-label">Pointe (W)</div>
+        </div>
+        <div class="result-box">
+          <div class="result-value" id="res-peak-hour">—</div>
+          <div class="result-label">Heure de pointe</div>
+        </div>
+      </div>
+
+      <hr class="sep" />
+
+      <div class="card-title">Profil de puissance sur 24 h</div>
+      <div class="profile-wrap">
+        <div class="profile" id="profile-bars"></div>
+        <div class="profile-axis">
+          <span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>24h</span>
+        </div>
+      </div>
+
+      <div class="tip" id="tip-box">
+        <strong>💡 Conseil :</strong> <span id="tip-text"></span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Chaque entrée = { id, name, watt, start, end } où start/end sont des heures décimales (0–24).
+  let appliances = [];
+
+  // ── Conversion "HH:MM" → heures décimales ──
+  function parseTime(val) {
+    if (!val) return NaN;
+    if (val === '24:00') return 24;
+    const [h, m] = val.split(':').map(Number);
+    if (isNaN(h) || isNaN(m)) return NaN;
+    return h + m / 60;
+  }
+
+  // ── Heures décimales → "HHhMM" pour l'affichage ──
+  function fmtTime(dec) {
+    const h = Math.floor(dec);
+    const m = Math.round((dec - h) * 60);
+    return `${String(h).padStart(2, '0')}h${m ? String(m).padStart(2, '0') : '00'}`;
+  }
+
+  // ── Intervalles couverts dans [0,24], gère le passage à minuit ──
+  function intervals(start, end) {
+    if (end > start)  return [[start, end]];
+    if (end < start)  return [[start, 24], [0, end]];   // wrap minuit
+    return [[0, 24]];                                    // start === end → 24 h
+  }
+
+  // ── Durée totale (heures) d'une entrée ──
+  function durationOf(a) {
+    return intervals(a.start, a.end).reduce((sum, [s, e]) => sum + (e - s), 0);
+  }
+
+  // ── Fraction de l'heure [h, h+1) couverte par une entrée ──
+  function coverageAtHour(a, h) {
+    let cov = 0;
+    intervals(a.start, a.end).forEach(([s, e]) => {
+      cov += Math.max(0, Math.min(e, h + 1) - Math.max(s, h));
+    });
+    return cov; // entre 0 et 1
+  }
+
+  // ── Presets ──
+  function fillPreset(name, watt, start, end) {
+    document.getElementById('inp-name').value  = name;
+    document.getElementById('inp-watt').value  = watt;
+    document.getElementById('inp-start').value = start;
+    document.getElementById('inp-end').value   = end;
+    document.getElementById('inp-name').focus();
+  }
+
+  // ── Ajouter ──
+  function addAppliance() {
+    const name  = document.getElementById('inp-name').value.trim();
+    const watt  = parseFloat(document.getElementById('inp-watt').value);
+    const start = parseTime(document.getElementById('inp-start').value);
+    const end   = parseTime(document.getElementById('inp-end').value);
+
+    if (!name)                      return alert('Veuillez saisir un nom pour l\'appareil.');
+    if (isNaN(watt) || watt <= 0)   return alert('Puissance invalide (doit être > 0 W).');
+    if (isNaN(start) || isNaN(end)) return alert('Plage horaire invalide.');
+
+    appliances.push({ id: Date.now(), name, watt, start, end });
+
+    // reset
+    document.getElementById('inp-name').value = '';
+    document.getElementById('inp-watt').value = '';
+
+    renderList();
+  }
+
+  // ── Supprimer ──
+  function removeAppliance(id) {
+    appliances = appliances.filter(a => a.id !== id);
+    renderList();
+  }
+
+  // ── Rendu liste ──
+  function renderList() {
+    const container = document.getElementById('appliance-list');
+    container.querySelectorAll('.appliance-row').forEach(el => el.remove());
+
+    const empty = document.getElementById('empty-msg');
+    if (appliances.length === 0) { empty.style.display = ''; return; }
+    empty.style.display = 'none';
+
+    appliances.forEach(a => {
+      const hours  = durationOf(a);
+      const kwh    = a.watt / 1000 * hours;
+      const ranges = intervals(a.start, a.end)
+        .map(([s, e]) => `${fmtTime(s)}–${fmtTime(e)}`).join(' + ');
+
+      // mini-frise : un segment par intervalle
+      const fills = intervals(a.start, a.end).map(([s, e]) =>
+        `<div class="track-fill" style="left:${s / 24 * 100}%;width:${(e - s) / 24 * 100}%;"></div>`
+      ).join('');
+
+      const row = document.createElement('div');
+      row.className = 'appliance-row';
+      row.innerHTML = `
+        <div class="appliance-head">
+          <div>
+            <div class="appliance-name">${a.name}</div>
+            <div class="appliance-meta">${a.watt} W · ${ranges} · ${hours.toFixed(2)} h</div>
+          </div>
+          <div style="display:flex;align-items:center;">
+            <span class="appliance-kwh">${kwh.toFixed(3)} kWh</span>
+            <button class="btn btn-danger btn-sm" onclick="removeAppliance(${a.id})">✕</button>
+          </div>
+        </div>
+        <div class="track">${fills}</div>
+      `;
+      container.appendChild(row);
+    });
+  }
+
+  // ── Calculer ──
+  function calculate() {
+    if (appliances.length === 0) return alert('Ajoutez au moins une plage horaire.');
+
+    // Profil horaire : puissance moyenne (W) par heure 0..23
+    const hourly = new Array(24).fill(0);
+    appliances.forEach(a => {
+      for (let h = 0; h < 24; h++) hourly[h] += a.watt * coverageAtHour(a, h);
+    });
+
+    // Total kWh = somme des W·heure / 1000
+    const totalKwh = hourly.reduce((s, w) => s + w, 0) / 1000;
+
+    // Pointe
+    let peakW = 0, peakHour = 0;
+    hourly.forEach((w, h) => { if (w > peakW) { peakW = w; peakHour = h; } });
+
+    document.getElementById('res-kwh').textContent       = totalKwh.toFixed(2);
+    document.getElementById('res-peak').textContent      = Math.round(peakW);
+    document.getElementById('res-peak-hour').textContent = `${peakHour}h–${peakHour + 1}h`;
+
+    // Frise 24h
+    const bars = document.getElementById('profile-bars');
+    bars.innerHTML = '';
+    hourly.forEach((w, h) => {
+      const pct = peakW > 0 ? (w / peakW * 100) : 0;
+      const bar = document.createElement('div');
+      bar.className = 'profile-bar' + (w === peakW && peakW > 0 ? ' peak' : '');
+      bar.style.height = `${Math.max(pct, w > 0 ? 4 : 0)}%`;
+      bar.title = `${h}h–${h + 1}h : ${Math.round(w)} W`;
+      bars.appendChild(bar);
+    });
+
+    // Conseil : appareil le plus gros qui tourne à l'heure de pointe
+    const tipBox  = document.getElementById('tip-box');
+    const tipText = document.getElementById('tip-text');
+    if (peakW > 0) {
+      const atPeak = appliances
+        .filter(a => coverageAtHour(a, peakHour) > 0)
+        .sort((x, y) => y.watt - x.watt);
+      if (atPeak.length > 1) {
+        const biggest = atPeak[0];
+        tipText.textContent = `À ${peakHour}h, ${atPeak.length} appareils tournent en même temps `
+          + `(pointe de ${Math.round(peakW)} W). Décaler « ${biggest.name} » (${biggest.watt} W) `
+          + `à une autre heure aplatirait ce pic.`;
+        tipBox.style.display = 'block';
+      } else {
+        tipBox.style.display = 'none';
+      }
+    } else {
+      tipBox.style.display = 'none';
+    }
+
+    document.getElementById('results-section').style.display = 'block';
+    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+</script>
+</body>
+</html>

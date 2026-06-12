@@ -1,18 +1,130 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>my_utils — Outils navigateur</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+    :root {
+      --bg: #f4f6fa;
+      --surface: #eef1f7;
+      --card: #ffffff;
+      --border: #dde2ec;
+      --accent: #2f80ed;
+      --accent-glow: rgba(47, 128, 237, 0.12);
+      --accent2: #e0a72b;
+      --text: #1a1f2e;
+      --muted: #6b7488;
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      padding: 3.5rem 1rem 4rem;
+    }
+
+    .container { max-width: 760px; margin: 0 auto; }
+
+    /* ── Header ── */
+    header { text-align: center; margin-bottom: 2.5rem; }
+    .logo {
+      font-family: var(--font-display);
+      font-size: 2.4rem; font-weight: 700;
+      letter-spacing: -0.03em; color: var(--text);
+    }
+    .logo span { color: var(--accent); }
+    header p { color: var(--muted); font-size: 0.95rem; margin-top: 0.4rem; }
+
+    /* ── Section label ── */
+    .section-label {
+      font-family: var(--font-display); font-size: 0.78rem;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--muted); margin-bottom: 0.9rem;
+    }
+
+    /* ── Tool grid ── */
+    .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 560px) { .tools { grid-template-columns: 1fr; } }
+
+    .tool-card {
+      display: flex; flex-direction: column; gap: 0.5rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.4rem 1.5rem;
+      text-decoration: none; color: inherit;
+      box-shadow: 0 1px 3px rgba(26, 31, 46, 0.05);
+      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+    }
+    .tool-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent);
+      box-shadow: 0 8px 22px rgba(47, 128, 237, 0.12);
+    }
+
+    .tool-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; background: var(--accent-glow);
+    }
+    .tool-name {
+      font-family: var(--font-display); font-size: 1.05rem; font-weight: 600;
+    }
+    .tool-desc { font-size: 0.83rem; color: var(--muted); line-height: 1.45; }
+    .tool-go {
+      margin-top: auto; font-size: 0.8rem; font-weight: 600;
+      color: var(--accent); display: inline-flex; align-items: center; gap: 0.3rem;
+    }
+    .tool-card:hover .tool-go { gap: 0.55rem; }
+
+    footer {
+      text-align: center; color: var(--muted);
+      font-size: 0.78rem; margin-top: 3rem;
+    }
+    footer code {
+      font-family: var(--font-display); background: var(--surface);
+      border: 1px solid var(--border); border-radius: 5px;
+      padding: 0.1rem 0.4rem; font-size: 0.75rem;
+    }
+  </style>
 </head>
 <body>
-    <h1>
-        Hello
-    </h1>
-    <ul>
-        <li>
-            <a href="pages/whatmywatt.html">What My Watt tool</a>
-        </li>
-    </ul>
+<div class="container">
+
+  <header>
+    <div class="logo">my<span>_utils</span></div>
+    <p>Une petite collection d'outils navigateur autonomes</p>
+  </header>
+
+  <div class="section-label">Outils</div>
+  <div class="tools">
+
+    <a class="tool-card" href="pages/whatmywatt.html">
+      <div class="tool-icon">⚡</div>
+      <div class="tool-name">What My Watt</div>
+      <div class="tool-desc">Estimez la consommation électrique du foyer à partir de la puissance, de la durée d'usage quotidienne et de la quantité de chaque appareil.</div>
+      <span class="tool-go">Ouvrir l'outil →</span>
+    </a>
+
+    <a class="tool-card" href="pages/wattplanning.html">
+      <div class="tool-icon">🕒</div>
+      <div class="tool-name">Watt Planning</div>
+      <div class="tool-desc">Planifiez vos appareils sur une frise de 24 h et repérez les pics de puissance de la journée.</div>
+      <span class="tool-go">Ouvrir l'outil →</span>
+    </a>
+
+  </div>
+
+  <footer>
+    Aucune étape de build — chaque outil est un seul fichier <code>.html</code> autonome.
+  </footer>
+
+</div>
 </body>
 </html>
