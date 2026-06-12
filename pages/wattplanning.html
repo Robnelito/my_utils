@@ -104,7 +104,13 @@
     .btn-sm { font-size: 0.78rem; padding: 0.35rem 0.7rem; }
 
     /* ── Presets ── */
-    .presets { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.9rem; }
+    .preset-cat {
+      font-family: var(--font-display); font-size: 0.7rem;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--muted); margin: 0.75rem 0 0.35rem;
+    }
+    .preset-cat:first-child { margin-top: 0; }
+    .presets { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.4rem; }
     .preset-tag {
       font-size: 0.73rem; padding: 0.25rem 0.65rem;
       background: var(--surface); border: 1px solid var(--border);
@@ -170,6 +176,8 @@
       transition: height 0.4s ease, background 0.2s;
     }
     .profile-bar.peak { background: var(--danger); }
+    .profile-bar.off { background: var(--border); opacity: 0.3; border-radius: 0; }
+    .profile-bar.off:hover { background: var(--border); }
     .profile-bar:hover { background: var(--accent2); }
     .profile-axis {
       display: flex; justify-content: space-between;
@@ -200,18 +208,82 @@
     <a class="back-link" href="../index.html">← Retour aux outils</a>
   </header>
 
+  <!-- ── Fenêtre de calcul ── -->
+  <div class="card" style="margin-bottom:1rem;">
+    <div class="card-title">Fenêtre de calcul</div>
+    <div class="presets" style="margin-bottom:0.7rem;">
+      <span class="preset-tag" onclick="setWindow('00:00','00:00')">🕛 Journée entière 24h</span>
+      <span class="preset-tag" onclick="setWindow('06:00','18:00')">🌞 Journée 6h–18h</span>
+      <span class="preset-tag" onclick="setWindow('18:00','06:00')">🌙 Nuit 18h–6h</span>
+      <span class="preset-tag" onclick="setWindow('08:00','20:00')">🏢 Bureau 8h–20h</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;">
+      <div class="field">
+        <label>Début de la fenêtre</label>
+        <input type="time" id="inp-win-start" value="00:00" />
+      </div>
+      <div class="field">
+        <label>Fin de la fenêtre</label>
+        <input type="time" id="inp-win-end" value="00:00" />
+      </div>
+    </div>
+    <p style="font-size:0.75rem;color:var(--muted);margin-top:0.8rem;margin-bottom:0;">
+      Seule la consommation comprise dans cette fenêtre est comptée. Les appareils doivent rester
+      dans cette plage. Laissez 00:00 → 00:00 (ou la même heure) pour toute la journée.
+    </p>
+  </div>
+
   <!-- ── Ajout d'appareil ── -->
   <div class="card" style="margin-bottom:1rem;">
     <div class="card-title">Ajouter un appareil sur la journée</div>
 
+    <div class="preset-cat">Cuisine</div>
     <div class="presets">
       <span class="preset-tag" onclick="fillPreset('Réfrigérateur',150,'00:00','00:00')">🧊 Réfrigérateur 24h</span>
-      <span class="preset-tag" onclick="fillPreset('Lave-linge',2000,'14:00','15:30')">🫧 Lave-linge</span>
+      <span class="preset-tag" onclick="fillPreset('Congélateur',200,'00:00','00:00')">❄️ Congélateur 24h</span>
       <span class="preset-tag" onclick="fillPreset('Four électrique',2200,'19:00','20:00')">🍳 Four</span>
-      <span class="preset-tag" onclick="fillPreset('Télévision',120,'20:00','23:00')">📺 Télévision</span>
-      <span class="preset-tag" onclick="fillPreset('Chauffe-eau',2000,'05:00','07:00')">🚿 Chauffe-eau</span>
+      <span class="preset-tag" onclick="fillPreset('Plaque à induction',2000,'12:00','12:30')">🔥 Plaque induction</span>
+      <span class="preset-tag" onclick="fillPreset('Micro-ondes',1000,'12:00','12:15')">🍲 Micro-ondes</span>
+      <span class="preset-tag" onclick="fillPreset('Bouilloire',2000,'07:00','07:10')">🫖 Bouilloire</span>
+      <span class="preset-tag" onclick="fillPreset('Cafetière',1000,'07:00','07:15')">☕ Cafetière</span>
+      <span class="preset-tag" onclick="fillPreset('Lave-vaisselle',1800,'20:00','21:30')">🍽️ Lave-vaisselle</span>
+      <span class="preset-tag" onclick="fillPreset('Rice cooker',700,'11:30','12:30')">🍚 Rice cooker</span>
+      <span class="preset-tag" onclick="fillPreset('Grille-pain',1000,'07:00','07:10')">🍞 Grille-pain</span>
+      <span class="preset-tag" onclick="fillPreset('Mixeur',400,'08:00','08:05')">🥤 Mixeur</span>
+      <span class="preset-tag" onclick="fillPreset('Hotte aspirante',150,'19:00','20:00')">🌬️ Hotte</span>
+    </div>
+
+    <div class="preset-cat">Buanderie & entretien</div>
+    <div class="presets">
+      <span class="preset-tag" onclick="fillPreset('Lave-linge',2000,'14:00','15:30')">🫧 Lave-linge</span>
+      <span class="preset-tag" onclick="fillPreset('Sèche-linge',2500,'15:30','17:00')">🌀 Sèche-linge</span>
+      <span class="preset-tag" onclick="fillPreset('Fer à repasser',1500,'18:00','18:45')">👔 Fer à repasser</span>
+      <span class="preset-tag" onclick="fillPreset('Aspirateur',900,'10:00','10:30')">🧹 Aspirateur</span>
+    </div>
+
+    <div class="preset-cat">Confort & climatisation</div>
+    <div class="presets">
       <span class="preset-tag" onclick="fillPreset('Climatiseur',1800,'13:00','17:00')">❄️ Climatiseur</span>
-      <span class="preset-tag" onclick="fillPreset('Éclairage',60,'18:00','23:00')">💡 Éclairage</span>
+      <span class="preset-tag" onclick="fillPreset('Ventilateur',60,'12:00','16:00')">🪭 Ventilateur</span>
+      <span class="preset-tag" onclick="fillPreset('Chauffage d\'appoint',1500,'06:00','08:00')">🔥 Chauffage d'appoint</span>
+      <span class="preset-tag" onclick="fillPreset('Chauffe-eau',2000,'05:00','07:00')">🚿 Chauffe-eau</span>
+      <span class="preset-tag" onclick="fillPreset('Sèche-cheveux',1600,'07:00','07:15')">💇 Sèche-cheveux</span>
+    </div>
+
+    <div class="preset-cat">Multimédia & bureau</div>
+    <div class="presets">
+      <span class="preset-tag" onclick="fillPreset('Télévision',120,'20:00','23:00')">📺 Télévision</span>
+      <span class="preset-tag" onclick="fillPreset('Box internet',15,'00:00','00:00')">📶 Box internet 24h</span>
+      <span class="preset-tag" onclick="fillPreset('Console de jeux',150,'20:00','22:00')">🎮 Console de jeux</span>
+      <span class="preset-tag" onclick="fillPreset('Ordinateur fixe',250,'09:00','17:00')">🖥️ PC fixe</span>
+      <span class="preset-tag" onclick="fillPreset('Ordinateur portable',50,'09:00','17:00')">💻 PC portable</span>
+      <span class="preset-tag" onclick="fillPreset('Chargeur téléphone',10,'22:00','06:00')">📱 Chargeur tél.</span>
+    </div>
+
+    <div class="preset-cat">Éclairage</div>
+    <div class="presets">
+      <span class="preset-tag" onclick="fillPreset('Éclairage LED',60,'18:00','23:00')">💡 Éclairage LED</span>
+      <span class="preset-tag" onclick="fillPreset('Ampoule LED',10,'18:00','23:00')">🔆 Ampoule LED</span>
     </div>
 
     <div class="row-form">
@@ -249,13 +321,13 @@
 
   <!-- ── Bouton calculer ── -->
   <button class="btn btn-primary btn-full" style="margin-bottom:1.5rem;font-size:1rem;padding:0.85rem;" onclick="calculate()">
-    ⚡ Calculer la journée
+    ⚡ Calculer la consommation
   </button>
 
   <!-- ── Résultats ── -->
   <div id="results-section">
     <div class="card">
-      <div class="card-title">Résultats — sur 24 h</div>
+      <div class="card-title">Résultats — <span id="res-window">sur 24 h</span></div>
       <div class="result-grid">
         <div class="result-box highlight">
           <div class="result-value" id="res-kwh">—</div>
@@ -273,7 +345,7 @@
 
       <hr class="sep" />
 
-      <div class="card-title">Profil de puissance sur 24 h</div>
+      <div class="card-title">Profil de puissance horaire</div>
       <div class="profile-wrap">
         <div class="profile" id="profile-bars"></div>
         <div class="profile-axis">
@@ -321,10 +393,22 @@
     return intervals(a.start, a.end).reduce((sum, [s, e]) => sum + (e - s), 0);
   }
 
-  // ── Fraction de l'heure [h, h+1) couverte par une entrée ──
-  function coverageAtHour(a, h) {
+  // ── Intersection de deux listes d'intervalles ──
+  function clipIntervals(list, windowList) {
+    const out = [];
+    list.forEach(([s, e]) => {
+      windowList.forEach(([ws, we]) => {
+        const a = Math.max(s, ws), b = Math.min(e, we);
+        if (b > a) out.push([a, b]);
+      });
+    });
+    return out;
+  }
+
+  // ── Fraction de l'heure [h, h+1) couverte par une liste d'intervalles ──
+  function coverageAt(list, h) {
     let cov = 0;
-    intervals(a.start, a.end).forEach(([s, e]) => {
+    list.forEach(([s, e]) => {
       cov += Math.max(0, Math.min(e, h + 1) - Math.max(s, h));
     });
     return cov; // entre 0 et 1
@@ -337,6 +421,12 @@
     document.getElementById('inp-start').value = start;
     document.getElementById('inp-end').value   = end;
     document.getElementById('inp-name').focus();
+  }
+
+  // ── Fenêtre de calcul ──
+  function setWindow(start, end) {
+    document.getElementById('inp-win-start').value = start;
+    document.getElementById('inp-win-end').value   = end;
   }
 
   // ── Ajouter ──
@@ -408,10 +498,24 @@
   function calculate() {
     if (appliances.length === 0) return alert('Ajoutez au moins une plage horaire.');
 
-    // Profil horaire : puissance moyenne (W) par heure 0..23
+    // Fenêtre de calcul : on ne compte que la conso comprise dans cette plage
+    const wStart = parseTime(document.getElementById('inp-win-start').value);
+    const wEnd   = parseTime(document.getElementById('inp-win-end').value);
+    if (isNaN(wStart) || isNaN(wEnd)) return alert('Fenêtre de calcul invalide.');
+    const windowIntervals = intervals(wStart, wEnd);
+    const windowHours = windowIntervals.reduce((s, [a, b]) => s + (b - a), 0);
+    const fullDay = windowHours >= 24 - 1e-9;
+
+    // Intervalles de chaque appareil, restreints à la fenêtre
+    const eff = appliances.map(a => ({
+      a,
+      ints: clipIntervals(intervals(a.start, a.end), windowIntervals)
+    }));
+
+    // Profil horaire : puissance moyenne (W) par heure 0..23 (dans la fenêtre)
     const hourly = new Array(24).fill(0);
-    appliances.forEach(a => {
-      for (let h = 0; h < 24; h++) hourly[h] += a.watt * coverageAtHour(a, h);
+    eff.forEach(({ a, ints }) => {
+      for (let h = 0; h < 24; h++) hourly[h] += a.watt * coverageAt(ints, h);
     });
 
     // Total kWh = somme des W·heure / 1000
@@ -421,19 +525,23 @@
     let peakW = 0, peakHour = 0;
     hourly.forEach((w, h) => { if (w > peakW) { peakW = w; peakHour = h; } });
 
+    document.getElementById('res-window').textContent    = fullDay ? 'sur 24 h' : `de ${fmtTime(wStart)} à ${fmtTime(wEnd)}`;
     document.getElementById('res-kwh').textContent       = totalKwh.toFixed(2);
     document.getElementById('res-peak').textContent      = Math.round(peakW);
-    document.getElementById('res-peak-hour').textContent = `${peakHour}h–${peakHour + 1}h`;
+    document.getElementById('res-peak-hour').textContent = peakW > 0 ? `${peakHour}h–${peakHour + 1}h` : '—';
 
-    // Frise 24h
+    // Frise 24h : les heures hors fenêtre sont grisées
     const bars = document.getElementById('profile-bars');
     bars.innerHTML = '';
     hourly.forEach((w, h) => {
+      const inWindow = coverageAt(windowIntervals, h) > 0;
       const pct = peakW > 0 ? (w / peakW * 100) : 0;
       const bar = document.createElement('div');
-      bar.className = 'profile-bar' + (w === peakW && peakW > 0 ? ' peak' : '');
-      bar.style.height = `${Math.max(pct, w > 0 ? 4 : 0)}%`;
-      bar.title = `${h}h–${h + 1}h : ${Math.round(w)} W`;
+      bar.className = 'profile-bar'
+        + (w === peakW && peakW > 0 ? ' peak' : '')
+        + (inWindow ? '' : ' off');
+      bar.style.height = inWindow ? `${Math.max(pct, w > 0 ? 4 : 0)}%` : '100%';
+      bar.title = inWindow ? `${h}h–${h + 1}h : ${Math.round(w)} W` : `${h}h–${h + 1}h : hors fenêtre`;
       bars.appendChild(bar);
     });
 
@@ -441,8 +549,9 @@
     const tipBox  = document.getElementById('tip-box');
     const tipText = document.getElementById('tip-text');
     if (peakW > 0) {
-      const atPeak = appliances
-        .filter(a => coverageAtHour(a, peakHour) > 0)
+      const atPeak = eff
+        .filter(({ ints }) => coverageAt(ints, peakHour) > 0)
+        .map(({ a }) => a)
         .sort((x, y) => y.watt - x.watt);
       if (atPeak.length > 1) {
         const biggest = atPeak[0];
