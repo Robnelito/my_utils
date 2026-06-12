@@ -220,11 +220,11 @@
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;">
       <div class="field">
         <label>Début de la fenêtre</label>
-        <input type="time" id="inp-win-start" value="00:00" />
+        <input type="time" id="inp-win-start" value="00:00" onchange="applyWindowBounds()" />
       </div>
       <div class="field">
         <label>Fin de la fenêtre</label>
-        <input type="time" id="inp-win-end" value="00:00" />
+        <input type="time" id="inp-win-end" value="00:00" onchange="applyWindowBounds()" />
       </div>
     </div>
     <p style="font-size:0.75rem;color:var(--muted);margin-top:0.8rem;margin-bottom:0;">
@@ -427,6 +427,39 @@
   function setWindow(start, end) {
     document.getElementById('inp-win-start').value = start;
     document.getElementById('inp-win-end').value   = end;
+    applyWindowBounds();
+  }
+
+  // Lit la fenêtre de calcul → { s, e, ints } ou null si invalide
+  function readWindow() {
+    const s = parseTime(document.getElementById('inp-win-start').value);
+    const e = parseTime(document.getElementById('inp-win-end').value);
+    if (isNaN(s) || isNaN(e)) return null;
+    return { s, e, ints: intervals(s, e) };
+  }
+
+  // Borne les champs Début/Fin de l'appareil sur la fenêtre (si elle ne passe pas minuit)
+  function applyWindowBounds() {
+    const startEl = document.getElementById('inp-start');
+    const endEl   = document.getElementById('inp-end');
+    const ws = document.getElementById('inp-win-start').value;
+    const we = document.getElementById('inp-win-end').value;
+    const s = parseTime(ws), e = parseTime(we);
+
+    if (!isNaN(s) && !isNaN(e) && e > s) {
+      // fenêtre simple : on borne les champs et on recadre les valeurs dedans
+      [startEl, endEl].forEach(el => { el.min = ws; el.max = we; });
+      if (parseTime(startEl.value) < s || parseTime(startEl.value) > e) startEl.value = ws;
+      if (parseTime(endEl.value)   < s || parseTime(endEl.value)   > e) endEl.value   = we;
+    } else {
+      // fenêtre 24 h ou à cheval sur minuit : pas de bornes possibles
+      [startEl, endEl].forEach(el => { el.removeAttribute('min'); el.removeAttribute('max'); });
+    }
+  }
+
+  // Durée totale (heures) d'une liste d'intervalles
+  function totalHours(list) {
+    return list.reduce((acc, [a, b]) => acc + (b - a), 0);
   }
 
   // ── Ajouter ──
@@ -439,6 +472,13 @@
     if (!name)                      return alert('Veuillez saisir un nom pour l\'appareil.');
     if (isNaN(watt) || watt <= 0)   return alert('Puissance invalide (doit être > 0 W).');
     if (isNaN(start) || isNaN(end)) return alert('Plage horaire invalide.');
+
+    // La plage de l'appareil ne doit pas dépasser la fenêtre de calcul
+    const win = readWindow();
+    if (!win) return alert('Définissez d\'abord une fenêtre de calcul valide.');
+    const appInts = intervals(start, end);
+    if (totalHours(clipIntervals(appInts, win.ints)) < totalHours(appInts) - 1e-9)
+      return alert(`La plage d'utilisation doit rester dans la fenêtre de calcul (${fmtTime(win.s)}–${fmtTime(win.e)}).`);
 
     appliances.push({ id: Date.now(), name, watt, start, end });
 
@@ -499,12 +539,10 @@
     if (appliances.length === 0) return alert('Ajoutez au moins une plage horaire.');
 
     // Fenêtre de calcul : on ne compte que la conso comprise dans cette plage
-    const wStart = parseTime(document.getElementById('inp-win-start').value);
-    const wEnd   = parseTime(document.getElementById('inp-win-end').value);
-    if (isNaN(wStart) || isNaN(wEnd)) return alert('Fenêtre de calcul invalide.');
-    const windowIntervals = intervals(wStart, wEnd);
-    const windowHours = windowIntervals.reduce((s, [a, b]) => s + (b - a), 0);
-    const fullDay = windowHours >= 24 - 1e-9;
+    const win = readWindow();
+    if (!win) return alert('Fenêtre de calcul invalide.');
+    const wStart = win.s, wEnd = win.e, windowIntervals = win.ints;
+    const fullDay = totalHours(windowIntervals) >= 24 - 1e-9;
 
     // Intervalles de chaque appareil, restreints à la fenêtre
     const eff = appliances.map(a => ({
@@ -569,6 +607,9 @@
     document.getElementById('results-section').style.display = 'block';
     document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+
+  // Applique les bornes de la fenêtre au chargement
+  applyWindowBounds();
 </script>
 </body>
 </html>
