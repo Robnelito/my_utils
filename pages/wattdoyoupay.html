@@ -169,6 +169,21 @@
     .tip strong { font-weight: 600; }
 
     hr.sep { border: none; border-top: 1px solid var(--border); margin: 1.2rem 0; }
+
+    /* ── Documentation dépliable ── */
+    .help { margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 0.9rem; }
+    .help summary {
+      cursor: pointer; list-style: none;
+      font-family: var(--font-display); font-size: 0.82rem; font-weight: 600;
+      color: var(--accent);
+    }
+    .help summary::-webkit-details-marker { display: none; }
+    .help summary::before { content: '▸ '; }
+    .help[open] summary::before { content: '▾ '; }
+    .help dl { margin-top: 0.8rem; }
+    .help dt { font-size: 0.83rem; font-weight: 600; color: var(--text); margin-top: 0.8rem; }
+    .help dt:first-of-type { margin-top: 0; }
+    .help dd { font-size: 0.8rem; color: var(--muted); line-height: 1.5; margin-top: 0.15rem; }
   </style>
 </head>
 <body>
@@ -189,8 +204,8 @@
         <input type="number" id="inp-principal" placeholder="1250" min="0" step="any" />
       </div>
       <div class="field">
-        <label>Montant total de la facture (€)</label>
-        <input type="number" id="inp-montant" placeholder="180.50" min="0" step="any" />
+        <label>Montant total de la facture (Ar)</label>
+        <input type="number" id="inp-montant" placeholder="180000" min="0" step="any" />
       </div>
     </div>
   </div>
@@ -207,12 +222,69 @@
     <div class="card-title">Répartition du résidu</div>
     <div class="field">
       <label>Le résidu (principal − somme des sous-compteurs) est réparti…</label>
-      <select id="inp-mode">
+      <select id="inp-mode" onchange="onModeChange()">
         <option value="prorata">Au prorata de la consommation de chacun</option>
         <option value="egal">En parts égales entre les sous-compteurs</option>
+        <option value="personne">Entièrement attribué à un sous-compteur précis</option>
+        <option value="sanscompteur">Payé par une personne sans sous-compteur</option>
         <option value="apart">Compté à part (ligne « communs », non réparti)</option>
       </select>
     </div>
+    <div class="field" id="target-field" style="display:none;">
+      <label>Sous-compteur qui prend tout le résidu</label>
+      <select id="inp-target"></select>
+    </div>
+    <div class="field" id="nometer-field" style="display:none;">
+      <label>Nom de la personne sans sous-compteur (elle paie le résidu)</label>
+      <input type="text" id="inp-nometer-name" placeholder="ex. Propriétaire" />
+    </div>
+
+    <details class="help">
+      <summary>Comment choisir le mode de répartition ?</summary>
+      <p style="font-size:0.8rem;color:var(--muted);line-height:1.5;margin-top:0.6rem;">
+        Le <strong>résidu</strong> est la différence entre le compteur principal et la somme des
+        sous-compteurs. Il correspond à la consommation non mesurée : parties communes, pertes,
+        ou appareils non comptés. Ces 4 modes décident <em>qui paie</em> ce résidu.
+      </p>
+      <dl>
+        <dt>Au prorata de la consommation</dt>
+        <dd>
+          Le résidu est partagé proportionnellement à la consommation de chaque sous-compteur :
+          plus on consomme, plus on prend une grosse part du résidu. Le plus équitable quand le
+          résidu vient de pertes liées à l'usage. <em>(Si tous les sous-compteurs sont à 0,
+          la répartition bascule automatiquement en parts égales.)</em>
+        </dd>
+
+        <dt>En parts égales</dt>
+        <dd>
+          Le résidu est divisé en parts identiques entre tous les sous-compteurs, quelle que
+          soit leur consommation. Adapté quand le résidu correspond à des charges communes
+          partagées également (ex. éclairage d'un couloir).
+        </dd>
+
+        <dt>Entièrement attribué à un sous-compteur précis</dt>
+        <dd>
+          Tout le résidu est facturé à une seule personne que vous désignez. Utile quand une
+          partie identifiée est responsable de la consommation non comptée (ex. le propriétaire,
+          ou le logement qui possède l'équipement sans sous-compteur).
+        </dd>
+
+        <dt>Payé par une personne sans sous-compteur</dt>
+        <dd>
+          Une personne qui n'a pas de sous-compteur paie la totalité du résidu : c'est
+          <em>sa</em> consommation, mesurée comme la différence entre le compteur principal et
+          les sous-compteurs. Elle apparaît dans le tableau comme un payeur à part entière
+          (ex. le logement principal, sans compteur dédié).
+        </dd>
+
+        <dt>Compté à part (communs)</dt>
+        <dd>
+          Le résidu n'est attribué à personne : il apparaît sur une ligne « Communs / pertes »
+          séparée. Pratique pour visualiser le montant des pertes sans le refacturer aux
+          sous-compteurs.
+        </dd>
+      </dl>
+    </details>
   </div>
 
   <!-- ── Bouton calculer ── -->
@@ -248,7 +320,7 @@
           <span>Conso</span>
           <span class="col-hide">Part directe</span>
           <span class="col-hide">Part résidu</span>
-          <span>Total €</span>
+          <span>Total Ar</span>
         </div>
         <div id="breakdown-body"></div>
       </div>
@@ -280,12 +352,36 @@
       <button class="btn btn-danger btn-sm" title="Supprimer" onclick="removeSub(${id})">✕</button>
     `;
     list.appendChild(row);
+    syncTarget();
   }
 
   // ── Supprimer une ligne ──
   function removeSub(id) {
     const row = document.querySelector(`.sub-row[data-id="${id}"]`);
     if (row) row.remove();
+    syncTarget();
+  }
+
+  // ── Champs additionnels selon le mode choisi ──
+  function onModeChange() {
+    const mode = document.getElementById('inp-mode').value;
+    document.getElementById('target-field').style.display  = mode === 'personne'     ? '' : 'none';
+    document.getElementById('nometer-field').style.display = mode === 'sanscompteur' ? '' : 'none';
+    if (mode === 'personne') refreshTarget();
+  }
+
+  // Garde le menu cible à jour si on est en mode « personne »
+  function syncTarget() {
+    if (document.getElementById('inp-mode').value === 'personne') refreshTarget();
+  }
+
+  // Remplit le menu cible avec les sous-compteurs actuels (par index)
+  function refreshTarget() {
+    const sel = document.getElementById('inp-target');
+    const prev = sel.value;
+    const subs = readSubs();
+    sel.innerHTML = subs.map((s, i) => `<option value="${i}">${s.name}</option>`).join('');
+    if (prev !== '' && Number(prev) < subs.length) sel.value = prev;
   }
 
   // ── Lire les sous-compteurs saisis ──
@@ -298,9 +394,9 @@
     });
   }
 
-  // ── Formatage € ──
-  function euro(n) {
-    return n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  // ── Formatage Ariary (MGA) ──
+  function money(n) {
+    return n.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' Ar';
   }
   function num(n) {
     return n.toLocaleString('fr-FR', { maximumFractionDigits: 2 });
@@ -320,6 +416,23 @@
     if (subs.some(s => isNaN(s.value) || s.value < 0))
       return alert('Chaque sous-compteur doit avoir une consommation valide (≥ 0).');
 
+    // Mode « attribué à une personne » : qui prend tout le résidu ?
+    let targetIndex = -1;
+    if (mode === 'personne') {
+      targetIndex = parseInt(document.getElementById('inp-target').value, 10);
+      if (isNaN(targetIndex) || targetIndex < 0 || targetIndex >= subs.length)
+        return alert('Choisissez le sous-compteur à qui attribuer le résidu.');
+    }
+
+    // Mode « personne sans sous-compteur » : nom du payeur du résidu
+    let noMeterName = '';
+    if (mode === 'sanscompteur') {
+      noMeterName = document.getElementById('inp-nometer-name').value.trim() || 'Sans sous-compteur';
+    }
+
+    // Le résidu apparaît sur une ligne séparée (non réparti entre les sous-compteurs)
+    const residuSeparate = (mode === 'apart' || mode === 'sanscompteur');
+
     const sumSub = subs.reduce((acc, s) => acc + s.value, 0);
     const residu = principal - sumSub;
     const unit   = montant / principal;       // coût par unité
@@ -327,7 +440,7 @@
     const n = subs.length;
 
     // Répartition du résidu
-    subs.forEach(s => {
+    subs.forEach((s, i) => {
       const direct = s.value * unit;
       let part = 0;
       if (mode === 'prorata') {
@@ -335,7 +448,10 @@
         part = sumSub > 0 ? residuCost * (s.value / sumSub) : residuCost / n;
       } else if (mode === 'egal') {
         part = residuCost / n;
-      } else { // apart → le résidu n'est pas réparti
+      } else if (mode === 'personne') {
+        // tout le résidu pour le sous-compteur désigné
+        part = (i === targetIndex) ? residuCost : 0;
+      } else { // apart / sanscompteur → le résidu n'est pas réparti entre les sous-compteurs
         part = 0;
       }
       s.direct = direct;
@@ -344,9 +460,9 @@
     });
 
     // ── Affichage synthèse ──
-    document.getElementById('res-unit').textContent        = euro(unit) + '/u';
+    document.getElementById('res-unit').textContent        = money(unit) + '/u';
     document.getElementById('res-residu').textContent      = num(residu);
-    document.getElementById('res-residu-cost').textContent = euro(residuCost);
+    document.getElementById('res-residu-cost').textContent = money(residuCost);
 
     // ── Tableau ──
     const body = document.getElementById('breakdown-body');
@@ -357,37 +473,38 @@
       div.innerHTML = `
         <span>${s.name}</span>
         <span>${num(s.value)}</span>
-        <span class="col-hide">${euro(s.direct)}</span>
-        <span class="col-hide">${euro(s.part)}</span>
-        <span>${euro(s.total)}</span>
+        <span class="col-hide">${money(s.direct)}</span>
+        <span class="col-hide">${money(s.part)}</span>
+        <span>${money(s.total)}</span>
       `;
       body.appendChild(div);
     });
 
-    // Ligne "communs" si le résidu n'est pas réparti
-    if (mode === 'apart') {
+    // Ligne séparée pour le résidu : « communs » (apart) ou la personne sans sous-compteur
+    if (residuSeparate) {
       const div = document.createElement('div');
-      div.className = 'breakdown-row communs';
+      // « communs » est grisé/italique ; la personne sans compteur est un vrai payeur
+      div.className = 'breakdown-row' + (mode === 'apart' ? ' communs' : '');
       div.innerHTML = `
-        <span>Communs / pertes</span>
+        <span>${mode === 'apart' ? 'Communs / pertes' : noMeterName}</span>
         <span>${num(residu)}</span>
-        <span class="col-hide">${euro(residuCost)}</span>
+        <span class="col-hide">${money(residuCost)}</span>
         <span class="col-hide">—</span>
-        <span>${euro(residuCost)}</span>
+        <span>${money(residuCost)}</span>
       `;
       body.appendChild(div);
     }
 
     // Ligne total (contrôle = doit valoir le montant de la facture)
-    const sommeTotale = subs.reduce((acc, s) => acc + s.total, 0) + (mode === 'apart' ? residuCost : 0);
+    const sommeTotale = subs.reduce((acc, s) => acc + s.total, 0) + (residuSeparate ? residuCost : 0);
     const totalRow = document.createElement('div');
     totalRow.className = 'breakdown-row total-row';
     totalRow.innerHTML = `
       <span>Total</span>
-      <span>${num(mode === 'apart' ? principal : sumSub)}</span>
+      <span>${num(residuSeparate ? principal : sumSub)}</span>
       <span class="col-hide"></span>
       <span class="col-hide"></span>
-      <span>${euro(sommeTotale)}</span>
+      <span>${money(sommeTotale)}</span>
     `;
     body.appendChild(totalRow);
 
@@ -398,12 +515,14 @@
     const warnText = document.getElementById('tip-warn-text');
 
     const pctResidu = principal > 0 ? (residu / principal * 100) : 0;
-    const modeLabel = mode === 'prorata' ? 'au prorata de la consommation'
-                    : mode === 'egal'    ? 'en parts égales'
+    const modeLabel = mode === 'prorata'     ? 'au prorata de la consommation'
+                    : mode === 'egal'        ? 'en parts égales'
+                    : mode === 'personne'    ? `entièrement à « ${subs[targetIndex].name} »`
+                    : mode === 'sanscompteur' ? `payé par « ${noMeterName} » (sans sous-compteur)`
                     : 'compté à part (communs)';
     infoText.textContent = `Le résidu de ${num(residu)} unités (${pctResidu.toFixed(1)} % du principal), `
-      + `soit ${euro(residuCost)}, est réparti ${modeLabel}. `
-      + `La somme des parts vaut ${euro(sommeTotale)} = montant de la facture.`;
+      + `soit ${money(residuCost)}, est réparti ${modeLabel}. `
+      + `La somme des parts vaut ${money(sommeTotale)} = montant de la facture.`;
     info.style.display = 'block';
 
     if (residu < 0) {
