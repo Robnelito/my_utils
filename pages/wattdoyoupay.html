@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Watt do you pay — Répartition de facture par sous-compteurs</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+    :root {
+      --bg: #f4f6fa;
+      --surface: #eef1f7;
+      --card: #ffffff;
+      --border: #dde2ec;
+      --accent: #2f80ed;
+      --accent-glow: rgba(47, 128, 237, 0.12);
+      --accent2: #e0a72b;
+      --text: #1a1f2e;
+      --muted: #6b7488;
+      --danger: #e5484d;
+      --success: #2b8a5b;
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+    }
+
+    /* ── Header ── */
+    header { text-align: center; margin-bottom: 2.5rem; }
+    .logo {
+      font-family: var(--font-display);
+      font-size: 2rem; font-weight: 700;
+      letter-spacing: -0.02em; color: var(--text);
+    }
+    .logo span { color: var(--accent); }
+    header p { color: var(--muted); font-size: 0.9rem; margin-top: 0.3rem; }
+    .back-link {
+      display: inline-block; margin-top: 0.6rem; font-size: 0.8rem;
+      color: var(--accent); text-decoration: none;
+    }
+    .back-link:hover { text-decoration: underline; }
+
+    /* ── Layout ── */
+    .container { max-width: 1000px; margin: 0 auto; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.4rem 1.5rem;
+      box-shadow: 0 1px 3px rgba(26, 31, 46, 0.05);
+    }
+    .card-title {
+      font-family: var(--font-display); font-size: 0.8rem;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--muted); margin-bottom: 1.1rem;
+    }
+
+    /* ── Form elements ── */
+    label { font-size: 0.83rem; color: var(--muted); display: block; margin-bottom: 0.3rem; }
+
+    input[type="text"], input[type="number"], select {
+      width: 100%; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); font-family: var(--font-body); font-size: 0.93rem;
+      padding: 0.55rem 0.8rem; outline: none;
+      transition: border-color 0.18s; appearance: none; -webkit-appearance: none;
+    }
+    select { cursor: pointer; }
+    input:focus, select:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .field { margin-bottom: 0.9rem; }
+    .field:last-child { margin-bottom: 0; }
+
+    .grid-two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 600px) { .grid-two { grid-template-columns: 1fr; } }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+      font-family: var(--font-display); font-size: 0.87rem; font-weight: 600;
+      border: none; border-radius: 8px; cursor: pointer; padding: 0.58rem 1rem;
+      transition: background 0.18s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--accent); color: #ffffff; }
+    .btn-primary:hover { background: #1c6fdc; }
+    .btn-ghost { background: var(--border); color: var(--muted); }
+    .btn-ghost:hover { background: #cfd6e3; color: var(--text); }
+    .btn-danger { background: transparent; border: 1px solid var(--border); color: var(--danger); }
+    .btn-danger:hover { background: rgba(229,72,77,0.08); }
+    .btn-full { width: 100%; }
+    .btn-sm { font-size: 0.78rem; padding: 0.35rem 0.7rem; }
+
+    /* ── Sous-compteurs ── */
+    #sub-list { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.9rem; }
+    .sub-row {
+      display: grid; grid-template-columns: 1fr 150px 40px;
+      gap: 0.6rem; align-items: center;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; } }
+    @media (max-width: 560px) { .sub-row { grid-template-columns: 1fr 110px 40px; } }
+    .sub-row .btn-danger { padding: 0.5rem 0; width: 100%; }
+
+    /* ── Résultats ── */
+    #results-section { display: none; margin-top: 1.5rem; }
+
+    .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; }
+    @media (max-width: 560px) { .result-grid { grid-template-columns: 1fr; } }
+    .result-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      padding: 1rem 1rem 0.9rem; text-align: center;
+    }
+    .result-box.highlight { border-color: var(--accent); background: var(--accent-glow); }
+    .result-value {
+      font-family: var(--font-display); font-size: 1.5rem; font-weight: 700;
+      line-height: 1.05; color: var(--text);
+    }
+    .result-box.highlight .result-value { color: var(--accent); }
+    .result-label { font-size: 0.73rem; color: var(--muted); margin-top: 0.35rem; text-transform: uppercase; letter-spacing: 0.07em; }
+
+    /* ── Tableau de répartition ── */
+    .breakdown { margin-top: 1rem; }
+    .breakdown-header, .breakdown-row {
+      display: grid;
+      grid-template-columns: 1fr 90px 90px 90px 100px;
+      gap: 0.5rem;
+      padding: 0.5rem 0.6rem;
+      font-size: 0.8rem;
+    }
+    @media (max-width: 640px) {
+      .breakdown-header, .breakdown-row { grid-template-columns: 1fr 70px 80px; }
+      .col-hide { display: none; }
+    }
+    .breakdown-header { color: var(--muted); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+    .breakdown-row { border-radius: 6px; }
+    .breakdown-row:nth-child(even) { background: var(--surface); }
+    .breakdown-row.communs { color: var(--muted); font-style: italic; }
+    .breakdown-row.total-row {
+      font-family: var(--font-display); font-weight: 600;
+      border-top: 1px solid var(--border); border-radius: 0;
+      margin-top: 0.3rem; padding-top: 0.7rem;
+    }
+    .breakdown-row span:not(:first-child), .breakdown-header span:not(:first-child) { text-align: right; }
+
+    /* ── Empty state ── */
+    .empty {
+      text-align: center; color: var(--muted); font-size: 0.85rem;
+      padding: 1.5rem; border: 1px dashed var(--border); border-radius: 10px;
+    }
+
+    /* ── Tip / alerte ── */
+    .tip {
+      border-radius: 8px; padding: 0.7rem 1rem; font-size: 0.8rem;
+      display: none; margin-top: 1rem;
+    }
+    .tip.info { background: rgba(224,167,43,0.1); border: 1px solid rgba(224,167,43,0.35); color: #8a6410; }
+    .tip.warn { background: rgba(229,72,77,0.08); border: 1px solid rgba(229,72,77,0.35); color: #a8323a; }
+    .tip strong { font-weight: 600; }
+
+    hr.sep { border: none; border-top: 1px solid var(--border); margin: 1.2rem 0; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">Watt do you <span>pay</span></div>
+    <p>Répartir une facture entre plusieurs sous-compteurs</p>
+    <a class="back-link" href="../index.html">← Retour aux outils</a>
+  </header>
+
+  <!-- ── Compteur principal & facture ── -->
+  <div class="card" style="margin-bottom:1rem;">
+    <div class="card-title">Compteur principal et facture</div>
+    <div class="grid-two">
+      <div class="field">
+        <label>Consommation du compteur principal (unités)</label>
+        <input type="number" id="inp-principal" placeholder="1250" min="0" step="any" />
+      </div>
+      <div class="field">
+        <label>Montant total de la facture (€)</label>
+        <input type="number" id="inp-montant" placeholder="180.50" min="0" step="any" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Sous-compteurs ── -->
+  <div class="card" style="margin-bottom:1rem;">
+    <div class="card-title">Sous-compteurs relevés</div>
+    <div id="sub-list"></div>
+    <button class="btn btn-ghost btn-full" onclick="addSub()">＋ Ajouter un sous-compteur</button>
+  </div>
+
+  <!-- ── Répartition du résidu ── -->
+  <div class="card" style="margin-bottom:1rem;">
+    <div class="card-title">Répartition du résidu</div>
+    <div class="field">
+      <label>Le résidu (principal − somme des sous-compteurs) est réparti…</label>
+      <select id="inp-mode">
+        <option value="prorata">Au prorata de la consommation de chacun</option>
+        <option value="egal">En parts égales entre les sous-compteurs</option>
+        <option value="apart">Compté à part (ligne « communs », non réparti)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ── Bouton calculer ── -->
+  <button class="btn btn-primary btn-full" style="margin-bottom:1.5rem;font-size:1rem;padding:0.85rem;" onclick="calculate()">
+    🧮 Répartir la facture
+  </button>
+
+  <!-- ── Résultats ── -->
+  <div id="results-section">
+    <div class="card">
+      <div class="card-title">Résultats</div>
+      <div class="result-grid">
+        <div class="result-box highlight">
+          <div class="result-value" id="res-unit">—</div>
+          <div class="result-label">Coût par unité</div>
+        </div>
+        <div class="result-box">
+          <div class="result-value" id="res-residu">—</div>
+          <div class="result-label">Résidu (unités)</div>
+        </div>
+        <div class="result-box">
+          <div class="result-value" id="res-residu-cost">—</div>
+          <div class="result-label">Coût du résidu</div>
+        </div>
+      </div>
+
+      <hr class="sep" />
+
+      <div class="card-title">Répartition par sous-compteur</div>
+      <div class="breakdown">
+        <div class="breakdown-header">
+          <span>Sous-compteur</span>
+          <span>Conso</span>
+          <span class="col-hide">Part directe</span>
+          <span class="col-hide">Part résidu</span>
+          <span>Total €</span>
+        </div>
+        <div id="breakdown-body"></div>
+      </div>
+
+      <div class="tip info" id="tip-info">
+        <strong>ℹ️ Info :</strong> <span id="tip-info-text"></span>
+      </div>
+      <div class="tip warn" id="tip-warn">
+        <strong>⚠️ Attention :</strong> <span id="tip-warn-text"></span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let nextId = 1;
+
+  // ── Ajouter une ligne de sous-compteur ──
+  function addSub(name = '', value = '') {
+    const list = document.getElementById('sub-list');
+    const id = nextId++;
+    const row = document.createElement('div');
+    row.className = 'sub-row';
+    row.dataset.id = id;
+    row.innerHTML = `
+      <input type="text" placeholder="ex. Appartement ${id}" value="${name}" />
+      <input type="number" placeholder="conso" min="0" step="any" value="${value}" />
+      <button class="btn btn-danger btn-sm" title="Supprimer" onclick="removeSub(${id})">✕</button>
+    `;
+    list.appendChild(row);
+  }
+
+  // ── Supprimer une ligne ──
+  function removeSub(id) {
+    const row = document.querySelector(`.sub-row[data-id="${id}"]`);
+    if (row) row.remove();
+  }
+
+  // ── Lire les sous-compteurs saisis ──
+  function readSubs() {
+    return [...document.querySelectorAll('.sub-row')].map((row, i) => {
+      const [nameEl, valEl] = row.querySelectorAll('input');
+      const name = nameEl.value.trim() || `Sous-compteur ${i + 1}`;
+      const value = parseFloat(valEl.value);
+      return { name, value };
+    });
+  }
+
+  // ── Formatage € ──
+  function euro(n) {
+    return n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  }
+  function num(n) {
+    return n.toLocaleString('fr-FR', { maximumFractionDigits: 2 });
+  }
+
+  // ── Calculer ──
+  function calculate() {
+    const principal = parseFloat(document.getElementById('inp-principal').value);
+    const montant   = parseFloat(document.getElementById('inp-montant').value);
+    const mode      = document.getElementById('inp-mode').value;
+
+    if (isNaN(principal) || principal <= 0) return alert('Saisissez une consommation de compteur principal valide (> 0).');
+    if (isNaN(montant) || montant < 0)      return alert('Saisissez un montant de facture valide (≥ 0).');
+
+    const subs = readSubs();
+    if (subs.length === 0)                  return alert('Ajoutez au moins un sous-compteur.');
+    if (subs.some(s => isNaN(s.value) || s.value < 0))
+      return alert('Chaque sous-compteur doit avoir une consommation valide (≥ 0).');
+
+    const sumSub = subs.reduce((acc, s) => acc + s.value, 0);
+    const residu = principal - sumSub;
+    const unit   = montant / principal;       // coût par unité
+    const residuCost = residu * unit;
+    const n = subs.length;
+
+    // Répartition du résidu
+    subs.forEach(s => {
+      const direct = s.value * unit;
+      let part = 0;
+      if (mode === 'prorata') {
+        // au prorata de la conso ; si tous à 0, on bascule en parts égales
+        part = sumSub > 0 ? residuCost * (s.value / sumSub) : residuCost / n;
+      } else if (mode === 'egal') {
+        part = residuCost / n;
+      } else { // apart → le résidu n'est pas réparti
+        part = 0;
+      }
+      s.direct = direct;
+      s.part = part;
+      s.total = direct + part;
+    });
+
+    // ── Affichage synthèse ──
+    document.getElementById('res-unit').textContent        = euro(unit) + '/u';
+    document.getElementById('res-residu').textContent      = num(residu);
+    document.getElementById('res-residu-cost').textContent = euro(residuCost);
+
+    // ── Tableau ──
+    const body = document.getElementById('breakdown-body');
+    body.innerHTML = '';
+    subs.forEach(s => {
+      const div = document.createElement('div');
+      div.className = 'breakdown-row';
+      div.innerHTML = `
+        <span>${s.name}</span>
+        <span>${num(s.value)}</span>
+        <span class="col-hide">${euro(s.direct)}</span>
+        <span class="col-hide">${euro(s.part)}</span>
+        <span>${euro(s.total)}</span>
+      `;
+      body.appendChild(div);
+    });
+
+    // Ligne "communs" si le résidu n'est pas réparti
+    if (mode === 'apart') {
+      const div = document.createElement('div');
+      div.className = 'breakdown-row communs';
+      div.innerHTML = `
+        <span>Communs / pertes</span>
+        <span>${num(residu)}</span>
+        <span class="col-hide">${euro(residuCost)}</span>
+        <span class="col-hide">—</span>
+        <span>${euro(residuCost)}</span>
+      `;
+      body.appendChild(div);
+    }
+
+    // Ligne total (contrôle = doit valoir le montant de la facture)
+    const sommeTotale = subs.reduce((acc, s) => acc + s.total, 0) + (mode === 'apart' ? residuCost : 0);
+    const totalRow = document.createElement('div');
+    totalRow.className = 'breakdown-row total-row';
+    totalRow.innerHTML = `
+      <span>Total</span>
+      <span>${num(mode === 'apart' ? principal : sumSub)}</span>
+      <span class="col-hide"></span>
+      <span class="col-hide"></span>
+      <span>${euro(sommeTotale)}</span>
+    `;
+    body.appendChild(totalRow);
+
+    // ── Messages ──
+    const info = document.getElementById('tip-info');
+    const infoText = document.getElementById('tip-info-text');
+    const warn = document.getElementById('tip-warn');
+    const warnText = document.getElementById('tip-warn-text');
+
+    const pctResidu = principal > 0 ? (residu / principal * 100) : 0;
+    const modeLabel = mode === 'prorata' ? 'au prorata de la consommation'
+                    : mode === 'egal'    ? 'en parts égales'
+                    : 'compté à part (communs)';
+    infoText.textContent = `Le résidu de ${num(residu)} unités (${pctResidu.toFixed(1)} % du principal), `
+      + `soit ${euro(residuCost)}, est réparti ${modeLabel}. `
+      + `La somme des parts vaut ${euro(sommeTotale)} = montant de la facture.`;
+    info.style.display = 'block';
+
+    if (residu < 0) {
+      warnText.textContent = `La somme des sous-compteurs (${num(sumSub)}) dépasse le compteur principal `
+        + `(${num(principal)}). Le résidu est négatif : vérifiez vos relevés. La répartition reste calculée, `
+        + `mais certaines parts du résidu sont des crédits (montants négatifs).`;
+      warn.style.display = 'block';
+    } else {
+      warn.style.display = 'none';
+    }
+
+    document.getElementById('results-section').style.display = 'block';
+    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Deux lignes par défaut au chargement
+  addSub();
+  addSub();
+</script>
+</body>
+</html>
