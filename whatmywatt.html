@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wattwise — Consommation Électrique</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+    :root {
+      --bg: #0f1117;
+      --surface: #181c27;
+      --card: #1e2335;
+      --border: #2a3050;
+      --accent: #4f9cf9;
+      --accent-glow: rgba(79, 156, 249, 0.18);
+      --accent2: #f9c74f;
+      --text: #e8eaf0;
+      --muted: #7a84a3;
+      --danger: #f87171;
+      --success: #34d399;
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .logo {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .logo span {
+      color: var(--accent);
+    }
+    header p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 0.3rem;
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 860px; margin: 0 auto; }
+
+    .grid-two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 600px) { .grid-two { grid-template-columns: 1fr; } }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.4rem 1.5rem;
+    }
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 1.1rem;
+    }
+
+    /* ── Form elements ── */
+    label { font-size: 0.83rem; color: var(--muted); display: block; margin-bottom: 0.3rem; }
+
+    input[type="text"], input[type="number"], input[type="date"], select {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.93rem;
+      padding: 0.55rem 0.8rem;
+      outline: none;
+      transition: border-color 0.18s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.6);
+      cursor: pointer;
+    }
+
+    .field { margin-bottom: 0.9rem; }
+    .field:last-child { margin-bottom: 0; }
+
+    .row-inputs { display: grid; grid-template-columns: 1fr 80px; gap: 0.6rem; align-items: end; }
+    .row-three { display: grid; grid-template-columns: 1fr 90px 90px; gap: 0.6rem; align-items: end; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+      font-family: var(--font-display); font-size: 0.87rem; font-weight: 600;
+      border: none; border-radius: 8px; cursor: pointer; padding: 0.58rem 1rem;
+      transition: background 0.18s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--accent); color: #0a0f1e; }
+    .btn-primary:hover { background: #74b3ff; }
+    .btn-ghost {
+      background: var(--border); color: var(--muted);
+    }
+    .btn-ghost:hover { background: #3a4068; color: var(--text); }
+    .btn-danger { background: transparent; border: 1px solid var(--border); color: var(--danger); }
+    .btn-danger:hover { background: rgba(248,113,113,0.1); }
+    .btn-full { width: 100%; }
+    .btn-sm { font-size: 0.78rem; padding: 0.35rem 0.7rem; }
+
+    /* ── Appareils list ── */
+    #appliance-list { margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+
+    .appliance-row {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.6rem 0.9rem;
+      animation: fadeIn 0.22s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; } }
+
+    .appliance-info { flex: 1; }
+    .appliance-name { font-size: 0.9rem; font-weight: 500; }
+    .appliance-meta { font-size: 0.75rem; color: var(--muted); margin-top: 0.1rem; }
+
+    .appliance-kwh {
+      font-family: var(--font-display); font-size: 0.95rem; font-weight: 600;
+      color: var(--accent); margin-right: 1rem; white-space: nowrap;
+    }
+
+    /* ── Date range ── */
+    .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+
+    /* ── Results ── */
+    #results-section { display: none; margin-top: 1.5rem; }
+
+    .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; }
+    @media (max-width: 560px) { .result-grid { grid-template-columns: 1fr 1fr; } }
+
+    .result-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      padding: 1rem 1rem 0.9rem; text-align: center;
+    }
+    .result-box.highlight { border-color: var(--accent); background: var(--accent-glow); }
+    .result-value {
+      font-family: var(--font-display); font-size: 1.6rem; font-weight: 700;
+      line-height: 1; color: var(--text);
+    }
+    .result-box.highlight .result-value { color: var(--accent); }
+    .result-label { font-size: 0.73rem; color: var(--muted); margin-top: 0.35rem; text-transform: uppercase; letter-spacing: 0.07em; }
+
+    /* ── Breakdown table ── */
+    .breakdown { margin-top: 1rem; }
+    .breakdown-header, .breakdown-row {
+      display: grid;
+      grid-template-columns: 1fr 70px 70px 80px;
+      gap: 0.5rem;
+      padding: 0.45rem 0.6rem;
+      font-size: 0.8rem;
+    }
+    .breakdown-header { color: var(--muted); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+    .breakdown-row { border-radius: 6px; }
+    .breakdown-row:nth-child(even) { background: var(--surface); }
+    .breakdown-row span:not(:first-child) { text-align: right; }
+    .breakdown-header span:not(:first-child) { text-align: right; }
+    .pct-bar-wrap { position: relative; background: var(--border); border-radius: 4px; height: 6px; margin-top: 0.25rem; }
+    .pct-bar { height: 100%; border-radius: 4px; background: var(--accent); transition: width 0.5s ease; }
+
+    /* ── Tarif ── */
+    .tarif-row { display: flex; align-items: center; gap: 0.8rem; }
+    .tarif-row input { flex: 1; }
+    .tarif-currency { color: var(--muted); font-size: 0.85rem; white-space: nowrap; }
+
+    /* ── Empty state ── */
+    .empty {
+      text-align: center; color: var(--muted); font-size: 0.85rem;
+      padding: 1.5rem; border: 1px dashed var(--border); border-radius: 10px;
+    }
+
+    /* ── Tip ── */
+    .tip {
+      background: rgba(249,199,79,0.07); border: 1px solid rgba(249,199,79,0.2);
+      border-radius: 8px; padding: 0.7rem 1rem; font-size: 0.8rem; color: #f9c74f;
+      display: none; margin-top: 1rem;
+    }
+    .tip strong { font-weight: 600; }
+
+    hr.sep { border: none; border-top: 1px solid var(--border); margin: 1.2rem 0; }
+
+    /* ── Tag de preset ── */
+    .presets { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.9rem; }
+    .preset-tag {
+      font-size: 0.73rem; padding: 0.25rem 0.65rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; cursor: pointer; color: var(--muted);
+      transition: all 0.15s;
+    }
+    .preset-tag:hover { border-color: var(--accent); color: var(--accent); }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">Watt<span>wise</span></div>
+    <p>Calculateur de consommation électrique domestique</p>
+  </header>
+
+  <!-- ── Ajout d'appareil ── -->
+  <div class="card" style="margin-bottom:1rem;">
+    <div class="card-title">Ajouter un appareil</div>
+
+    <div class="presets">
+      <span class="preset-tag" onclick="fillPreset('Réfrigérateur',150,24)">🧊 Réfrigérateur</span>
+      <span class="preset-tag" onclick="fillPreset('Lave-linge',2000,1.5)">🫧 Lave-linge</span>
+      <span class="preset-tag" onclick="fillPreset('Four électrique',2200,1)">🍳 Four</span>
+      <span class="preset-tag" onclick="fillPreset('Télévision',120,4)">📺 Télévision</span>
+      <span class="preset-tag" onclick="fillPreset('Ordinateur portable',45,8)">💻 PC portable</span>
+      <span class="preset-tag" onclick="fillPreset('Ampoule LED',10,6)">💡 Ampoule LED</span>
+      <span class="preset-tag" onclick="fillPreset('Chauffe-eau',2000,2)">🚿 Chauffe-eau</span>
+      <span class="preset-tag" onclick="fillPreset('Aspirateur',900,0.5)">🌀 Aspirateur</span>
+      <span class="preset-tag" onclick="fillPreset('Rice cooker',700,1)">🍚 Rice cooker</span>
+    </div>
+
+    <div class="row-three">
+      <div class="field">
+        <label>Nom de l'appareil</label>
+        <input type="text" id="inp-name" placeholder="ex. Climatiseur salon" />
+      </div>
+      <div class="field">
+        <label>Puissance (W)</label>
+        <input type="number" id="inp-watt" placeholder="1800" min="0" step="1" />
+      </div>
+      <div class="field">
+        <label>Utilisation / jour (h)</label>
+        <input type="number" id="inp-hours" placeholder="2.5" min="0" step="0.25" max="24" />
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="addAppliance()">＋ Ajouter à la liste</button>
+  </div>
+
+  <!-- ── Liste appareils ── -->
+  <div class="card" style="margin-bottom:1rem;">
+    <div class="card-title">Appareils enregistrés</div>
+    <div id="appliance-list">
+      <div class="empty" id="empty-msg">Aucun appareil ajouté pour l'instant.</div>
+    </div>
+  </div>
+
+  <!-- ── Période ── -->
+  <div class="card" style="margin-bottom:1rem;">
+    <div class="card-title">Période de calcul</div>
+    <div class="field">
+      <label>Nombre de jours</label>
+      <input type="number" id="inp-days" value="30" min="1" step="1" placeholder="30" />
+    </div>
+    <div class="presets" style="margin-top:0.7rem;margin-bottom:0;">
+      <span class="preset-tag" onclick="setDays(7)">7 j</span>
+      <span class="preset-tag" onclick="setDays(15)">15 j</span>
+      <span class="preset-tag" onclick="setDays(30)">30 j</span>
+      <span class="preset-tag" onclick="setDays(90)">3 mois</span>
+      <span class="preset-tag" onclick="setDays(365)">1 an</span>
+    </div>
+  </div>
+
+  <!-- ── Bouton calculer ── -->
+  <button class="btn btn-primary btn-full" style="margin-bottom:1.5rem;font-size:1rem;padding:0.85rem;" onclick="calculate()">
+    ⚡ Calculer la consommation
+  </button>
+
+  <!-- ── Résultats ── -->
+  <div id="results-section">
+    <div class="card">
+      <div class="card-title">Résultats — <span id="res-period"></span></div>
+      <div class="result-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="result-box highlight">
+          <div class="result-value" id="res-kwh">—</div>
+          <div class="result-label">kWh total</div>
+        </div>
+        <div class="result-box">
+          <div class="result-value" id="res-per-day">—</div>
+          <div class="result-label">kWh / jour</div>
+        </div>
+      </div>
+
+      <hr class="sep" />
+
+      <div class="card-title">Détail par appareil</div>
+      <div class="breakdown">
+        <div class="breakdown-header">
+          <span>Appareil</span>
+          <span>W</span>
+          <span>h/j</span>
+          <span>kWh</span>
+        </div>
+        <div id="breakdown-body"></div>
+      </div>
+
+      <div class="tip" id="tip-box">
+        <strong>💡 Conseil :</strong> <span id="tip-text"></span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let appliances = [];
+
+  // ── Presets ──
+  function fillPreset(name, watt, hours) {
+    document.getElementById('inp-name').value = name;
+    document.getElementById('inp-watt').value = watt;
+    document.getElementById('inp-hours').value = hours;
+    document.getElementById('inp-name').focus();
+  }
+
+  // ── Helpers jours ──
+  function getDays() {
+    return parseInt(document.getElementById('inp-days').value) || 0;
+  }
+
+  function setDays(n) {
+    document.getElementById('inp-days').value = n;
+  }
+
+  // ── Ajouter un appareil ──
+  function addAppliance() {
+    const name  = document.getElementById('inp-name').value.trim();
+    const watt  = parseFloat(document.getElementById('inp-watt').value);
+    const hours = parseFloat(document.getElementById('inp-hours').value);
+
+    if (!name)          return alert('Veuillez saisir un nom pour l\'appareil.');
+    if (isNaN(watt) || watt <= 0)   return alert('Puissance invalide (doit être > 0 W).');
+    if (isNaN(hours) || hours <= 0 || hours > 24) return alert('Durée invalide (entre 0 et 24 h/jour).');
+
+    const id = Date.now();
+    const kwhPerDay = (watt * hours) / 1000;
+    appliances.push({ id, name, watt, hours, kwhPerDay });
+
+    // reset
+    document.getElementById('inp-name').value = '';
+    document.getElementById('inp-watt').value = '';
+    document.getElementById('inp-hours').value = '';
+
+    renderList();
+  }
+
+  // ── Supprimer ──
+  function removeAppliance(id) {
+    appliances = appliances.filter(a => a.id !== id);
+    renderList();
+  }
+
+  // ── Rendu liste ──
+  function renderList() {
+    const container = document.getElementById('appliance-list');
+
+    // Vider uniquement les rows (pas le empty-msg)
+    container.querySelectorAll('.appliance-row').forEach(el => el.remove());
+
+    const empty = document.getElementById('empty-msg');
+
+    if (appliances.length === 0) {
+      empty.style.display = '';
+      return;
+    }
+    empty.style.display = 'none';
+
+    appliances.forEach(a => {
+      const row = document.createElement('div');
+      row.className = 'appliance-row';
+      row.innerHTML = `
+        <div class="appliance-info">
+          <div class="appliance-name">${a.name}</div>
+          <div class="appliance-meta">${a.watt} W · ${a.hours} h/jour</div>
+        </div>
+        <div class="appliance-kwh">${a.kwhPerDay.toFixed(3)} kWh/j</div>
+        <button class="btn btn-danger btn-sm" onclick="removeAppliance(${a.id})">✕</button>
+      `;
+      container.appendChild(row);
+    });
+  }
+
+  // ── Calculer ──
+  function calculate() {
+    if (appliances.length === 0) return alert('Ajoutez au moins un appareil.');
+
+    const days = getDays();
+    if (days <= 0) return alert('Veuillez saisir un nombre de jours valide (> 0).');
+
+    let totalKwh = 0;
+    appliances.forEach(a => { totalKwh += a.kwhPerDay * days; });
+
+    const kwhPerDay = totalKwh / days;
+
+    // Affichage résultats globaux
+    document.getElementById('res-kwh').textContent     = totalKwh.toFixed(2);
+    document.getElementById('res-per-day').textContent = kwhPerDay.toFixed(3);
+    document.getElementById('res-period').textContent  = `${days} jour${days > 1 ? 's' : ''}`;
+
+    // Breakdown
+    const body = document.getElementById('breakdown-body');
+    body.innerHTML = '';
+    const sorted = [...appliances].sort((a, b) => b.kwhPerDay - a.kwhPerDay);
+    sorted.forEach(a => {
+      const appKwh = a.kwhPerDay * days;
+      const pct    = totalKwh > 0 ? (appKwh / totalKwh * 100) : 0;
+      const div = document.createElement('div');
+      div.className = 'breakdown-row';
+      div.innerHTML = `
+        <span>
+          ${a.name}
+          <div class="pct-bar-wrap"><div class="pct-bar" style="width:${pct.toFixed(1)}%"></div></div>
+        </span>
+        <span>${a.watt}</span>
+        <span>${a.hours}</span>
+        <span>${appKwh.toFixed(2)}</span>
+      `;
+      body.appendChild(div);
+    });
+
+    // Conseil automatique
+    const topAppliance = sorted[0];
+    const topPct = totalKwh > 0 ? (topAppliance.kwhPerDay * days / totalKwh * 100) : 0;
+    const tipBox  = document.getElementById('tip-box');
+    const tipText = document.getElementById('tip-text');
+    if (topPct > 40) {
+      tipText.textContent = `"${topAppliance.name}" représente ${topPct.toFixed(0)} % de votre consommation totale. Réduire son usage de 30 min/jour économiserait ~${((topAppliance.watt * 0.5 / 1000) * days).toFixed(2)} kWh sur la période.`;
+      tipBox.style.display = 'block';
+    } else {
+      tipBox.style.display = 'none';
+    }
+
+    document.getElementById('results-section').style.display = 'block';
+    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+</script>
+</body>
+</html>
