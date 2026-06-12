@@ -244,7 +244,7 @@
       <p style="font-size:0.8rem;color:var(--muted);line-height:1.5;margin-top:0.6rem;">
         Le <strong>résidu</strong> est la différence entre le compteur principal et la somme des
         sous-compteurs. Il correspond à la consommation non mesurée : parties communes, pertes,
-        ou appareils non comptés. Ces 4 modes décident <em>qui paie</em> ce résidu.
+        ou appareils non comptés. Ces 5 modes décident <em>qui paie</em> ce résidu.
       </p>
       <dl>
         <dt>Au prorata de la consommation</dt>
@@ -515,13 +515,13 @@
     const warnText = document.getElementById('tip-warn-text');
 
     const pctResidu = principal > 0 ? (residu / principal * 100) : 0;
-    const modeLabel = mode === 'prorata'     ? 'au prorata de la consommation'
-                    : mode === 'egal'        ? 'en parts égales'
-                    : mode === 'personne'    ? `entièrement à « ${subs[targetIndex].name} »`
+    const modeLabel = mode === 'prorata'      ? 'réparti au prorata de la consommation de chacun'
+                    : mode === 'egal'         ? 'réparti en parts égales entre les sous-compteurs'
+                    : mode === 'personne'     ? `attribué entièrement à « ${subs[targetIndex].name} »`
                     : mode === 'sanscompteur' ? `payé par « ${noMeterName} » (sans sous-compteur)`
-                    : 'compté à part (communs)';
+                    : 'compté à part sur la ligne « Communs / pertes »';
     infoText.textContent = `Le résidu de ${num(residu)} unités (${pctResidu.toFixed(1)} % du principal), `
-      + `soit ${money(residuCost)}, est réparti ${modeLabel}. `
+      + `soit ${money(residuCost)}, est ${modeLabel}. `
       + `La somme des parts vaut ${money(sommeTotale)} = montant de la facture.`;
     info.style.display = 'block';
 
