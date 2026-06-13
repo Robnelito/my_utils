@@ -189,7 +189,7 @@
     .breakdown-row:nth-child(even) { background: var(--surface); }
     .breakdown-row span:not(:first-child) { text-align: right; }
     .breakdown-header span:not(:first-child) { text-align: right; }
-    @media (max-width: 560px) {
+    @media screen and (max-width: 560px) {
       .breakdown-header, .breakdown-row { grid-template-columns: 1fr 55px; }
       .col-hide { display: none; }
     }
@@ -216,6 +216,21 @@
     .tip strong { font-weight: 600; }
 
     hr.sep { border: none; border-top: 1px solid var(--border); margin: 1.2rem 0; }
+
+    /* ── Export PDF ── */
+    .export-row { display: flex; gap: 0.6rem; align-items: center; margin-top: 1.2rem; }
+    .export-row input { flex: 1; min-width: 0; }
+
+    @media print {
+      body { background: #fff; padding: 0.5rem 1rem; }
+      .back-link { display: none; }
+      .container > .card,
+      .container > .btn { display: none; }
+      #results-section { display: block !important; margin-top: 1rem; }
+      .export-row { display: none; }
+      .tip { display: block; }
+      .card { box-shadow: none !important; border-color: #dde2ec; }
+    }
 
     /* ── Tag de preset ── */
     .presets { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.9rem; }
@@ -335,6 +350,12 @@
 
       <div class="tip" id="tip-box">
         <strong>💡 Conseil :</strong> <span id="tip-text"></span>
+      </div>
+
+      <hr class="sep" />
+      <div class="export-row">
+        <input type="text" id="inp-filename" placeholder="whatmywatt-résultats" maxlength="80" />
+        <button class="btn btn-ghost" onclick="exportPDF()">📄 Exporter en PDF</button>
       </div>
     </div>
   </div>
@@ -476,6 +497,16 @@
 
     document.getElementById('results-section').style.display = 'block';
     document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ── Export PDF ──
+  function exportPDF() {
+    const raw = document.getElementById('inp-filename').value.trim();
+    const filename = raw || 'whatmywatt-résultats';
+    const prev = document.title;
+    document.title = filename;
+    window.print();
+    document.title = prev;
   }
 </script>
 </body>
