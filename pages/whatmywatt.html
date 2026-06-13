@@ -189,6 +189,10 @@
     .breakdown-row:nth-child(even) { background: var(--surface); }
     .breakdown-row span:not(:first-child) { text-align: right; }
     .breakdown-header span:not(:first-child) { text-align: right; }
+    @media (max-width: 560px) {
+      .breakdown-header, .breakdown-row { grid-template-columns: 1fr 55px; }
+      .col-hide { display: none; }
+    }
     .pct-bar-wrap { position: relative; background: var(--border); border-radius: 4px; height: 6px; margin-top: 0.25rem; }
     .pct-bar { height: 100%; border-radius: 4px; background: var(--accent); transition: width 0.5s ease; }
 
@@ -321,9 +325,9 @@
       <div class="breakdown">
         <div class="breakdown-header">
           <span>Appareil</span>
-          <span>Qté</span>
-          <span>W</span>
-          <span>h/j</span>
+          <span class="col-hide">Qté</span>
+          <span class="col-hide">W</span>
+          <span class="col-hide">h/j</span>
           <span>kWh</span>
         </div>
         <div id="breakdown-body"></div>
@@ -450,9 +454,9 @@
           ${a.name}
           <div class="pct-bar-wrap"><div class="pct-bar" style="width:${pct.toFixed(1)}%"></div></div>
         </span>
-        <span>${a.qty}</span>
-        <span>${a.watt}</span>
-        <span>${a.hours}</span>
+        <span class="col-hide">${a.qty}</span>
+        <span class="col-hide">${a.watt}</span>
+        <span class="col-hide">${a.hours}</span>
         <span>${appKwh.toFixed(2)}</span>
       `;
       body.appendChild(div);

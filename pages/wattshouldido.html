@@ -152,6 +152,7 @@
 
     .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; }
     @media (max-width: 560px) { .result-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 480px) { .result-grid { grid-template-columns: 1fr; } }
     .result-box {
       background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
       padding: 1rem 1rem 0.9rem; text-align: center;
@@ -165,10 +166,10 @@
     .result-label { font-size: 0.73rem; color: var(--muted); margin-top: 0.35rem; text-transform: uppercase; letter-spacing: 0.07em; }
 
     /* ── Frise 24h (profil de puissance) ── */
-    .profile-wrap { margin-top: 0.4rem; }
+    .profile-wrap { margin-top: 0.4rem; overflow-x: auto; }
     .profile {
       display: flex; align-items: flex-end; gap: 2px;
-      height: 150px; padding-top: 0.5rem;
+      height: 150px; padding-top: 0.5rem; min-width: 260px;
     }
     .profile-bar {
       flex: 1; background: var(--accent); border-radius: 3px 3px 0 0;
